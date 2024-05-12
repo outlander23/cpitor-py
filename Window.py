@@ -1,15 +1,13 @@
+import os
 from tkinter import *
 from tkinter import messagebox as message
 from tkinter import filedialog as fd
 from Stack import *
-
 import subprocess
 
-#  Class Window is used for managing all the operations in TextEditor
 class Window:
     def __init__(self):
-        # Variables declarations at initial level
-        self.isFileOpen = True
+        self.isFileOpen = False
         self.File = ""
         self.isFileChange = False
         self.elecnt = 0
@@ -18,18 +16,38 @@ class Window:
                           ('Python Files', '*.py'),
                           ('Text Document', '*.txt')]
 
-        # Initialisation Of window
         self.window = Tk()
         self.window.geometry("1200x700+200+150")
         self.window.wm_title("Untitled")
 
-        # Initialisation of Text Widget
         self.TextBox = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
+        self.TextBox.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
-        # Initialisation of MenuBar
+        self.inputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
+        self.inputText.grid(row=0, column=1, sticky="nsew")
+
+        self.outputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
+        self.outputText.grid(row=1, column=1, sticky="nsew")
+
+        self.window.columnconfigure(0, weight=1)
+        self.window.columnconfigure(1, weight=1)
+        self.window.rowconfigure(0, weight=1)
+        self.window.rowconfigure(1, weight=1)
+
+        # Load empty file in TextBox
+        self.TextBox.insert(END, "")  # Insert empty text
+
+        # Open input.txt in inputText
+        self.open_input_file()
+
+        # Open output.txt in outputText
+        self.open_output_file()
+
+        self.TextBox.bind("<FocusOut>", self.save_file_on_focus_out)
+    
         self.menuBar = Menu(self.window, bg="#eeeeee", font=("Helvetica", 13), borderwidth=0)
         self.window.config(menu=self.menuBar)
-        # File Menu
+
         self.fileMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.fileMenu.add_command(label="    New       Ctrl+N", command=self.new_file, )
         self.fileMenu.add_command(label="    Open...      Ctrl+O", command=self.open_file)
@@ -37,35 +55,27 @@ class Window:
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label="    Exit          Ctrl+D", command=self._quit)
         self.menuBar.add_cascade(label="   File   ", menu=self.fileMenu)
-        # Edit Menu
-        self.editMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2,
-                             font="Helvetica", )
-        self.editMenu.add_command(label="    Undo    Ctrl+Z", command=self.undo)
-        self.editMenu.add_command(label="    Redo    Ctrl+Shift+Z", command=self.redo)
-        self.editMenu.add_separator()
-        self.editMenu.add_command(label="    Cut    Ctrl+X", command=self.cut)
-        self.editMenu.add_command(label="    Copy    Ctrl+C", command=self.copy)
-        self.editMenu.add_command(label="    Paste   Ctrl+V", command=self.paste)
-        self.menuBar.add_cascade(label="   Edit   ", menu=self.editMenu)
-        # View Menu
-        self.viewMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2,
-                             font="Helvetica", )
+
+        self.viewMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.viewMenu.add_command(label="   Change Mode   ", command=self.change_color)
         self.menuBar.add_cascade(label="   View   ", menu=self.viewMenu)
-        # Help Menu
-        self.helpMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2,
-                             font="Helvetica", )
+
+        self.helpMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.helpMenu.add_command(label="    About   ", command=self.about)
         self.menuBar.add_cascade(label="   Help   ", menu=self.helpMenu)
 
-        # Initialisation Of Stack Objects By Original state i.e if the file contains data, it is the Original state of
-        # that file
         self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
         self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
 
-    #     Member Functions
-    # 1. New File method which creates a new file
+        self.runMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
+        self.runMenu.add_command(label="    Run         Ctrl+R", command=self.run_cpp_script)
+        self.menuBar.add_cascade(label="   Run   ", menu=self.runMenu)
+
+
+        self.window.mainloop()
+
     def new_file(self):
+
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen:
             if len(self.File) > 0:
@@ -90,7 +100,6 @@ class Window:
             self.UStack.clear_stack()
             self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
-    # 2. Open a file which opens a file in editing mode
     def open_file(self):
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen and self.isFileChange:
@@ -110,8 +119,8 @@ class Window:
             self.UStack.clear_stack()
             self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
-    # 3. Save file
     def save_file(self, file):
+        print("save file click")
         result = message.askquestion('Window Title', 'Do You Want to Save Changes')
         if result == "yes":
             if len(file) == 0:
@@ -122,7 +131,6 @@ class Window:
             else:
                 self.write_file(file)
 
-    # 4. Save new file -> this function is for saving the new file
     def save_new_file(self, result):
         self.isFileChange = False
         if result == "yes":
@@ -132,13 +140,11 @@ class Window:
         else:
             self.TextBox.delete('1.0', END)
 
-    # 5. Writing in file
     def write_file(self, file):
         inputValue = self.TextBox.get("1.0", "end-1c")
         outfile = open(file, "w")
         outfile.write(inputValue)
 
-    # 6. Getting the data from file and showing in the text widget box
     def retrieve_input(self):
         if self.isFileOpen and len(self.File) != 0:
             self.write_file(self.File)
@@ -148,7 +154,6 @@ class Window:
             self.window.wm_title(self.File)
             self.isFileOpen = True
 
-    # 7. This function invokes whenever a key is pressed whether it is a special-key or a normal key
     def key_pressed(self, event):
         if event.char == "\x1a" and event.keysym == "Z":
             self.redo()
@@ -190,7 +195,6 @@ class Window:
         if self.TextBox.get("1.0", "end-1c") == self.UStack.ele(0):
             self.isFileChange = False
 
-    # 8. Undo the data by calling Stack class functions
     def undo(self):
         self.isFileChange = True
         if self.UStack.size() == 1:
@@ -202,7 +206,6 @@ class Window:
             self.TextBox.delete('1.0', END)
             self.TextBox.insert(END, text)
 
-    # 9. Redo/Rewrite the task/data by calling Stack class functions
     def redo(self):
         if self.RStack.size() > 1:
             text = self.RStack.peek()
@@ -211,20 +214,16 @@ class Window:
             self.UStack.add(text)
             self.RStack.remove()
 
-    # 10. Close the window (called when the close button at the right-top is clicked)
     def on_closing(self):
         if self.isFileOpen and self.isFileChange:
             self.save_file(self.File)
         self._quit()
 
-    # 11. Quit or Exit Function to exit from Text-Editor
     def _quit(self):
         self.window.quit()
         self.window.destroy()
 
-    # 12. Night mode view by changing the color of Text widget
     def change_color(self):
-
         if self.mode == "normal":
             self.mode = "dark"
             self.TextBox.configure(background="#2f2b2b", foreground="#BDBDBD", font=("Helvetica", 14),
@@ -234,40 +233,89 @@ class Window:
             self.TextBox.configure(background="white", foreground="black", font=("Helvetica", 14),
                                    insertbackground="black")
 
-    # 13. About
     def about(self):
         outfile = open("About.txt", "r")
         text = outfile.read()
         self.TextBox.insert(END, text)
         self.TextBox.config(state=DISABLED)
 
-    # 14. Copy
     def copy(self):
         self.TextBox.clipboard_clear()
         text = self.TextBox.get("sel.first", "sel.last")
         self.TextBox.clipboard_append(text)
 
-    # 15. Cut
     def cut(self):
         self.copy()
         self.TextBox.delete("sel.first", "sel.last")
         self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
-    # 16. Paste
     def paste(self):
         text = self.TextBox.selection_get(selection='CLIPBOARD')
         self.TextBox.insert('insert', text)
         self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
     def run_cpp_script(self):
+        print("run cpp")
         if self.File:  # Check if a file is currently open
-            bash_command = f"./compile_and_run.sh {self.File} input.txt output.txt"
+            input_file = "input.txt"
+            output_file = "output.txt"
+            bash_command = f"./compile_and_run.sh {self.File} {input_file} {output_file}"
+            print("Bash command:", bash_command)  # Debugging print
+
+            # Write input text to input.txt
+            input_text = self.inputText.get("1.0", END)
+            with open(input_file, "w") as f:
+                f.write(input_text)
+
+            # Execute the bash command
             process = subprocess.Popen(bash_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, error = process.communicate()
+            print("Output:", output.decode("utf-8"))  # Debugging print
+
             if error:
                 print("Error:", error.decode("utf-8"))
             else:
-                print("Output:", output.decode("utf-8"))
+                # Reload the output file
+                try:
+                    with open(output_file, "r") as f:
+                        output_text = f.read()
+                        self.outputText.delete('1.0', END)  # Clear previous output
+                        self.outputText.insert(END, output_text)  # Update outputText with new output
+                        print("Output:", output_text)  # Debugging print
+                except FileNotFoundError:
+                    print("Output file not found.")
         else:
             print("No file is currently open.")
 
+
+
+
+    def open_input_file(self):
+        print("open input")
+        # Open input.txt file
+        try:
+            with open("input.txt", "r") as input_file:
+                input_text = input_file.read()
+                self.inputText.insert(END, input_text)
+            print("done input")
+        except FileNotFoundError:
+            print("Input file not found.")
+
+    def open_output_file(self):
+        print("open output")
+        # Open output.txt file
+        try:
+            with open("output.txt", "r") as output_file:
+                output_text = output_file.read()
+                self.outputText.insert(END, output_text)
+                print("done output")
+        except FileNotFoundError:
+            print("Output file not found.")
+
+    def save_file_on_focus_out(self, event):
+        # Save the file if it's open and there are changes
+        if self.isFileOpen and self.isFileChange:
+            self.retrieve_input(self.File)
+
+if __name__ == "__main__":
+    TextEditor = Window()
