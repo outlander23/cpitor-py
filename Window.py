@@ -1,9 +1,9 @@
 import os
+import subprocess
 from tkinter import *
 from tkinter import messagebox as message
 from tkinter import filedialog as fd
 from Stack import *
-import subprocess
 
 class Window:
     def __init__(self):
@@ -43,39 +43,51 @@ class Window:
         # Open output.txt in outputText
         self.open_output_file()
 
+        self.window.bind("<F8>", self.run_cpp_script_extra)
         self.TextBox.bind("<FocusOut>", self.save_file_on_focus_out)
+        self.window.bind("<Control-s>", self.save_file_shortcut)
     
+        self.create_menu()
+
+        self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
+        self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
+
+        self.window.mainloop()
+
+    def create_menu(self):
         self.menuBar = Menu(self.window, bg="#eeeeee", font=("Helvetica", 13), borderwidth=0)
         self.window.config(menu=self.menuBar)
 
+        self.create_file_menu()
+        self.create_view_menu()
+        self.create_help_menu()
+        self.create_run_menu()
+
+    def create_file_menu(self):
         self.fileMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.fileMenu.add_command(label="    New       Ctrl+N", command=self.new_file, )
         self.fileMenu.add_command(label="    Open...      Ctrl+O", command=self.open_file)
         self.fileMenu.add_command(label="    Save         Ctrl+S", command=self.retrieve_input)
         self.fileMenu.add_separator()
-        self.fileMenu.add_command(label="    Exit          Ctrl+D", command=self._quit)
+        self.fileMenu.add_command(label="  Exit          Ctrl+D", command=self._quit)
         self.menuBar.add_cascade(label="   File   ", menu=self.fileMenu)
 
+    def create_view_menu(self):
         self.viewMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.viewMenu.add_command(label="   Change Mode   ", command=self.change_color)
         self.menuBar.add_cascade(label="   View   ", menu=self.viewMenu)
 
+    def create_help_menu(self):
         self.helpMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.helpMenu.add_command(label="    About   ", command=self.about)
         self.menuBar.add_cascade(label="   Help   ", menu=self.helpMenu)
 
-        self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
-        self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
-
+    def create_run_menu(self):
         self.runMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.runMenu.add_command(label="    Run         Ctrl+R", command=self.run_cpp_script)
         self.menuBar.add_cascade(label="   Run   ", menu=self.runMenu)
 
-
-        self.window.mainloop()
-
     def new_file(self):
-
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen:
             if len(self.File) > 0:
@@ -255,6 +267,14 @@ class Window:
         self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
     def run_cpp_script(self):
+        
+        if self.isFileOpen and len(self.File) != 0:
+            self.write_file(self.File)
+            self.isFileChange = False
+        else:
+            self.save_new_file("yes")
+            self.window.wm_title(self.File)
+            self.isFileOpen = True
         print("run cpp")
         if self.File:  # Check if a file is currently open
             input_file = "input.txt"
@@ -287,9 +307,6 @@ class Window:
         else:
             print("No file is currently open.")
 
-
-
-
     def open_input_file(self):
         print("open input")
         # Open input.txt file
@@ -316,6 +333,11 @@ class Window:
         # Save the file if it's open and there are changes
         if self.isFileOpen and self.isFileChange:
             self.retrieve_input(self.File)
+    def save_file_shortcut(self, event):
+        self.retrieve_input()
+
+    def run_cpp_script_extra(self,event):
+        self.run_cpp_script()
 
 if __name__ == "__main__":
     TextEditor = Window()

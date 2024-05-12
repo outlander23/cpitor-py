@@ -1,10 +1,7 @@
-#include <iostream>
-using namespace std;
-int main() {
-	
-	int n;cin>>n;
+#include "bits/stdc++.h"
 
-	for(int i=1;i<=n;i++)
-		cout<<i+1<<endl;
-    	return 0;
+using namespace std;
+
+int main(){
+   cout<<"pak you"<<endl;
 }
