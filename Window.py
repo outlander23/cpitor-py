@@ -1,9 +1,12 @@
 import os
+import json
 import subprocess
 from tkinter import *
 from tkinter import messagebox as message
 from tkinter import filedialog as fd
 from Stack import *
+import CodeFormatter 
+from Linenumber import TextLineNumbers
 
 class Window:
     def __init__(self):
@@ -20,22 +23,29 @@ class Window:
         self.window.geometry("1200x700+200+150")
         self.window.wm_title("Untitled")
 
+        # TextBox (main text editor) in the top-left corner
         self.TextBox = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
-        self.TextBox.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
+        # Input text area in the top-right corner
         self.inputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
-        self.inputText.grid(row=0, column=1, sticky="nsew")
+        self.inputText.grid(row=0, column=2, sticky="nsew")
 
+        # Output text area in the bottom-right corner
         self.outputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
-        self.outputText.grid(row=1, column=1, sticky="nsew")
+        self.outputText.grid(row=1, column=2, sticky="nsew")
 
-        self.window.columnconfigure(0, weight=1)
-        self.window.columnconfigure(1, weight=1)
-        self.window.rowconfigure(0, weight=1)
-        self.window.rowconfigure(1, weight=1)
+        # Line numbers on the left side of the TextBox
+        self.line_numbers = TextLineNumbers(self.window, self.TextBox, width=30)
+        self.line_numbers.grid(row=0, column=0, rowspan=2, sticky="nsw")
 
+        # Configure grid weights to allow resizing
+        self.window.columnconfigure(1, weight=2)  # TextBox column
+        self.window.columnconfigure(2, weight=1)  # Input/Output column
+        self.window.rowconfigure(0, weight=1)     # First row
+        self.window.rowconfigure(1, weight=1)     # Second row
         # Load empty file in TextBox
-        self.TextBox.insert(END, "")  # Insert empty text
+        self.TextBox.insert(END, "")  
 
         # Open input.txt in inputText
         self.open_input_file()
@@ -52,6 +62,8 @@ class Window:
         self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
         self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
 
+        # self.configure_syntax_highlighting()  # Call the function to configure syntax highlighting
+
         self.window.mainloop()
 
     def create_menu(self):
@@ -63,6 +75,36 @@ class Window:
         self.create_help_menu()
         self.create_run_menu()
 
+        self.create_edit_menu()
+
+        self.create_setting_menu()
+
+    def create_setting_menu(self):
+        self.settings_menu = Menu(self.menuBar, tearoff=0)
+        self.tab_size_var = IntVar(value=4)  # Default tab size
+        self.settings_menu.add_radiobutton(label="Tab Size 2", variable=self.tab_size_var, value=2, command=self.set_tab_size)
+        self.settings_menu.add_radiobutton(label="Tab Size 4", variable=self.tab_size_var, value=4, command=self.set_tab_size)
+        self.settings_menu.add_radiobutton(label="Tab Size 8", variable=self.tab_size_var, value=8, command=self.set_tab_size)
+        self.settings_menu.add_separator()
+        self.mode_var = IntVar(value=0)  # 0 for Normal mode, 1 for Dark mode
+        self.settings_menu.add_radiobutton(label="Normal Mode", variable=self.mode_var, value=0, command=self.set_mode)
+        self.settings_menu.add_radiobutton(label="Dark Mode", variable=self.mode_var, value=1, command=self.set_mode)
+        self.menuBar.add_cascade(label="Settings", menu=self.settings_menu)
+        def set_tab_size(self):
+            tab_size = self.tab_size_var.get()
+            self.text_widget.config(tabsize=tab_size)
+
+    def set_mode(self):
+        mode = self.mode_var.get()
+        if mode == 0:  # Normal mode
+            self.window.config(bg="white", fg="black")
+        else:  # Dark mode
+            self.window.config(bg="black", fg="white")
+
+
+    def set_tab_size(self):
+        tab_size = self.tab_size_var.get()
+        self.TextBox.config(tabsize=tab_size)
     def create_file_menu(self):
         self.fileMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.fileMenu.add_command(label="    New       Ctrl+N", command=self.new_file, )
@@ -71,6 +113,7 @@ class Window:
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label="  Exit          Ctrl+D", command=self._quit)
         self.menuBar.add_cascade(label="   File   ", menu=self.fileMenu)
+        
 
     def create_view_menu(self):
         self.viewMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
@@ -86,7 +129,10 @@ class Window:
         self.runMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.runMenu.add_command(label="    Run         Ctrl+R", command=self.run_cpp_script)
         self.menuBar.add_cascade(label="   Run   ", menu=self.runMenu)
-
+    def create_edit_menu(self):
+        self.editMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
+        self.editMenu.add_command(label="Format Code", command=self.format_code)  # Add "Format Code" option
+        self.menuBar.add_cascade(label="   Edit   ", menu=self.editMenu)
     def new_file(self):
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen:
@@ -113,6 +159,8 @@ class Window:
             self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
     def open_file(self):
+        self.configure_syntax_highlighting()
+        print("opne file")
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen and self.isFileChange:
             self.save_file(self.File)
@@ -158,6 +206,7 @@ class Window:
         outfile.write(inputValue)
 
     def retrieve_input(self):
+        self.configure_syntax_highlighting();
         if self.isFileOpen and len(self.File) != 0:
             self.write_file(self.File)
             self.isFileChange = False
@@ -197,6 +246,7 @@ class Window:
             inputValue = self.TextBox.get("1.0", "end-1c")
             self.UStack.add(inputValue)
         else:
+            print("pak")
             self.isFileChange = True
             inputValue = self.TextBox.get("1.0", "end-1c")
             if self.elecnt >= 1:
@@ -292,6 +342,7 @@ class Window:
             output, error = process.communicate()
             print("Output:", output.decode("utf-8"))  # Debugging print
 
+
             if error:
                 print("Error:", error.decode("utf-8"))
             else:
@@ -310,6 +361,7 @@ class Window:
     def open_input_file(self):
         print("open input")
         # Open input.txt file
+        
         try:
             with open("input.txt", "r") as input_file:
                 input_text = input_file.read()
@@ -338,6 +390,41 @@ class Window:
 
     def run_cpp_script_extra(self,event):
         self.run_cpp_script()
+        
+    def configure_syntax_highlighting(self):
+        pass
+            # # Load syntax highlighting rules from the JSON file
+            # with open('cpp_syntax_highlighting_rules.json') as f:
+            #     syntax_rules = json.load(f)
+            
+            # print("text syntax",self.TextBox)
+            # # Apply syntax highlighting rules
+            # for rule in syntax_rules:
+            #     pattern = rule['pattern']
+            #     color = rule['color']
+            #     tag_name = rule['tag_name']
+            #     self.TextBox.tag_configure(tag_name, foreground=color)
+
+            #     start_index = '1.0'
+            #     while True:
+            #         start_index = self.TextBox.search("int", start_index, stopindex=END)
+            #         if not start_index:
+            #             break
+            #         end_index = f"{start_index}+{len(pattern)}c"
+            #         self.TextBox.tag_add(tag_name, start_index, end_index)
+            #         start_index = end_index
+
+    def format_code(self):
+        """
+        Format the code in the text editor using autopep8.
+        """
+        # Get the current contents of the text editor
+        code = self.TextBox.get("1.0", "end-1c")
+
+        # Format the code using autopep8
+        formatted_code =CodeFormatter.format_code(code)      # Update the text editor with the formatted code
+        self.TextBox.delete("1.0", "end")
+        self.TextBox.insert("1.0", formatted_code)
 
 if __name__ == "__main__":
     TextEditor = Window()

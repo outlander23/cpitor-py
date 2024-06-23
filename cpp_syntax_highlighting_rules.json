@@ -1,0 +1,52 @@
+[
+  {
+    "pattern": "#[^\n]*",
+    "color": "gray",
+    "tag_name": "comment"
+  },
+  {
+    "pattern": "\\b(if|else|for|while|break|continue|return)\\b",
+    "color": "blue",
+    "tag_name": "keyword"
+  },
+  {
+    "pattern": "\\b(int|float|double|char|void)\\b",
+    "color": "purple",
+    "tag_name": "type"
+  },
+  {
+    "pattern": "\\b(true|false)\\b",
+    "color": "green",
+    "tag_name": "boolean"
+  },
+  {
+    "pattern": "\\b[0-9]+\\b",
+    "color": "orange",
+    "tag_name": "number"
+  },
+  {
+    "pattern": "\".*?\"",
+    "color": "red",
+    "tag_name": "string"
+  },
+  {
+    "pattern": "\\b(namespace|class|public|private|protected|struct|template|typename|using|constexpr|static|const|extern|mutable|auto|inline|virtual|explicit|operator|new|delete|friend|typedef|decltype|nullptr)\\b",
+    "color": "blue",
+    "tag_name": "keyword"
+  },
+  {
+    "pattern": "\\b(try|catch|throw|except)\\b",
+    "color": "blue",
+    "tag_name": "keyword"
+  },
+  {
+    "pattern": "\\b(std|cin|cout|endl|vector|string|map|set|iterator|algorithm|queue|stack|pair)\\b",
+    "color": "purple",
+    "tag_name": "library"
+  },
+  {
+    "pattern": "\\<[A-Za-z_]+[A-Za-z_0-9]*\\>",
+    "color": "blue",
+    "tag_name": "keyword"
+  }
+]
