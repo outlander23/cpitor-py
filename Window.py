@@ -12,7 +12,7 @@ import CodeFormatter
 from Linenumber import TextLineNumbers
 from Cpp_runner import run_cpp_script
 
-
+import re
 class Window:
     def __init__(self):
         self.File = ""
@@ -33,32 +33,8 @@ class Window:
         self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 12), borderwidth=1, relief="solid")
 
         self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
-
-        # # Input text area in the top-right corner
-        # self.inputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
-        # self.inputText.grid(row=0, column=2, sticky="nsew")
-
-        # # Output text area in the bottom-right corner
-        # self.outputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
-        # self.outputText.grid(row=1, column=2, sticky="nsew")
-
-        # # Line numbers on the left side of the TextBox
-        # self.line_numbers = TextLineNumbers(self.window, self.TextBox, width=30)
-        # self.line_numbers.grid(row=0, column=0, rowspan=2, sticky="nsw")
-
-        # # Terminal frame for displaying compilation errors/messages
-        # self.terminalFrame = Frame(self.window, bg="white", height=200)
-        # self.terminalFrame.grid(row=2, column=0, columnspan=3, sticky="nsew")
-        
-        # self.terminalText = Text(self.terminalFrame, bg="white", fg="black", font=("Courier", 12))
-        # self.terminalText.pack(expand=True, fill="both")
-
-        # # Configure grid weights to allow resizing
-        # self.window.columnconfigure(1, weight=1)  # TextBox column
-        # self.window.columnconfigure(2, weight=2)  # Input/Output column
-        # self.window.rowconfigure(0, weight=1)     # First row
-        # self.window.rowconfigure(1, weight=1)     # Second row
-        # self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
+        self.TextBox = Text(self.window, wrap='word', undo=True)
+     
         # Input file name label
         self.inputFileLabel = Label(self.window, text="Input", font=("Courier", 14))
         self.inputFileLabel.grid(row=0, column=2, sticky="nw")
@@ -75,7 +51,7 @@ class Window:
         self.outputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
         self.outputText.grid(row=1, column=2, sticky="nsew", pady=(30, 0))
 
-        self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 12), borderwidth=1, relief="solid")
+        self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 14), borderwidth=1, relief="solid")
         self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
         # Line numbers on the left side of the TextBox
@@ -441,37 +417,24 @@ class Window:
                 color = rule['color']
                 tag_name = rule['tag_name']
                 self.TextBox.tag_configure(tag_name, foreground=color)
-                print(pattern)
-                start_index = '1.0'
-                while True:
-                    start_index = self.TextBox.search(pattern, start_index, stopindex=END, regexp=True)
-                    print(self.TextBox)
-                    if not start_index:
-                        break
-                    
-                    # Calculate end_index based on the length of matched text
-                    end_index = self.TextBox.index(f"{start_index}+{len(self.TextBox.get(start_index, f'{start_index} lineend'))}c")
-                    
-                    # Tag the matched text with the appropriate tag
+               
+                code = self.TextBox.get("1.0", "end-1c")
+
+                for match in re.finditer(pattern, code, re.MULTILINE):
+                    start_index = f"1.0 + {match.start()}c"
+                    end_index = f"1.0 + {match.end()}c"
                     self.TextBox.tag_add(tag_name, start_index, end_index)
-                    
-                    # Move start_index forward to continue searching
-                    start_index = end_index
 
         except FileNotFoundError:
             print("Syntax highlighting rules file (cpp_syntax_highlighting_rules.json) not found.")
-
-
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def format_code(self):
-        """
-        Format the code in the text editor using autopep8.
-        """
-        # Get the current contents of the text editor
+
         code = self.TextBox.get("1.0", "end-1c")
-        print(code)
-        # Format the code using autopep8
-        formatted_code =CodeFormatter.format_cpp_code(code)      # Update the text editor with the formatted code
+
+        formatted_code =CodeFormatter.format_cpp_code(code) 
         self.TextBox.delete("1.0", "end")
         self.TextBox.insert("1.0", formatted_code)
 
