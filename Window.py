@@ -40,10 +40,10 @@ class Window:
         self.line_numbers.grid(row=0, column=0, rowspan=2, sticky="nsw")
 
         # Terminal frame for displaying compilation errors/messages
-        self.terminalFrame = Frame(self.window, bg="black", height=200)
+        self.terminalFrame = Frame(self.window, bg="white", height=200)
         self.terminalFrame.grid(row=2, column=0, columnspan=3, sticky="nsew")
         
-        self.terminalText = Text(self.terminalFrame, bg="black", fg="white", font=("Courier", 12))
+        self.terminalText = Text(self.terminalFrame, bg="white", fg="black", font=("Courier", 12))
         self.terminalText.pack(expand=True, fill="both")
 
         # Configure grid weights to allow resizing
@@ -52,6 +52,7 @@ class Window:
         self.window.rowconfigure(0, weight=1)     # First row
         self.window.rowconfigure(1, weight=1)     # Second row
         self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
+   
 
         # Load empty file in TextBox
         self.TextBox.insert(END, "")  
@@ -62,7 +63,7 @@ class Window:
         # Open output.txt in outputText
         self.open_output_file()
 
-        self.window.bind("<F8>", self.run_cpp_script_extra)
+        self.window.bind("<F7>", self.run_cpp_script_extra)
         self.TextBox.bind("<FocusOut>", self.save_file_on_focus_out)
         self.window.bind("<Control-s>", self.save_file_shortcut)
     
@@ -73,6 +74,11 @@ class Window:
 
         self.window.mainloop()
 
+    def display_error(self, error_message):
+        self.terminalText.config(state="normal")
+        self.terminalText.delete(1.0, END)  # Clear previous content
+        self.terminalText.insert(END, error_message)
+        self.terminalText.config(state="disabled")
     def create_menu(self):
         self.menuBar = Menu(self.window, bg="#eeeeee", font=("Helvetica", 13), borderwidth=0)
         self.window.config(menu=self.menuBar)
@@ -332,7 +338,7 @@ class Window:
             self.save_new_file("yes")
             self.window.wm_title(self.File)
             self.isFileOpen = True
-        print("run cpp")
+        
         if self.File:  # Check if a file is currently open
             input_file = "input.txt"
             output_file = "output.txt"
@@ -348,10 +354,13 @@ class Window:
             process = subprocess.Popen(bash_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, error = process.communicate()
             print("Output:", output.decode("utf-8"))  # Debugging print
+            
 
 
             if error:
-                print("Error:", error.decode("utf-8"))
+                error_message = error.decode("utf-8")
+                print("Error:", error_message)
+                self.display_error(error_message)
             else:
                 # Reload the output file
                 try:
@@ -366,9 +375,6 @@ class Window:
             print("No file is currently open.")
 
     def open_input_file(self):
-        print("open input")
-        # Open input.txt file
-        
         try:
             with open("input.txt", "r") as input_file:
                 input_text = input_file.read()
@@ -378,8 +384,6 @@ class Window:
             print("Input file not found.")
 
     def open_output_file(self):
-        print("open output")
-        # Open output.txt file
         try:
             with open("output.txt", "r") as output_file:
                 output_text = output_file.read()
