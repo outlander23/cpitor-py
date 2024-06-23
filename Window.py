@@ -1,19 +1,25 @@
-import os
+
 import json
-import subprocess
 from tkinter import *
+
 from tkinter import messagebox as message
 from tkinter import filedialog as fd
+
 from Stack import *
+
 import CodeFormatter 
+
 from Linenumber import TextLineNumbers
+from Cpp_runner import run_cpp_script
+
 
 class Window:
     def __init__(self):
-        self.isFileOpen = False
         self.File = ""
-        self.isFileChange = False
         self.elecnt = 0
+        self.isFileOpen = False
+        self.isFileChange = False
+        
         self.mode = "normal"
         self.fileTypes = [('All Files', '*.*'),
                           ('Python Files', '*.py'),
@@ -23,17 +29,54 @@ class Window:
         self.window.geometry("1200x700+200+150")
         self.window.wm_title("Untitled")
 
-        # TextBox (main text editor) in the top-left corner
-        self.TextBox = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
+       
+        self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 12), borderwidth=1, relief="solid")
+
         self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
+        # # Input text area in the top-right corner
+        # self.inputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
+        # self.inputText.grid(row=0, column=2, sticky="nsew")
+
+        # # Output text area in the bottom-right corner
+        # self.outputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
+        # self.outputText.grid(row=1, column=2, sticky="nsew")
+
+        # # Line numbers on the left side of the TextBox
+        # self.line_numbers = TextLineNumbers(self.window, self.TextBox, width=30)
+        # self.line_numbers.grid(row=0, column=0, rowspan=2, sticky="nsw")
+
+        # # Terminal frame for displaying compilation errors/messages
+        # self.terminalFrame = Frame(self.window, bg="white", height=200)
+        # self.terminalFrame.grid(row=2, column=0, columnspan=3, sticky="nsew")
+        
+        # self.terminalText = Text(self.terminalFrame, bg="white", fg="black", font=("Courier", 12))
+        # self.terminalText.pack(expand=True, fill="both")
+
+        # # Configure grid weights to allow resizing
+        # self.window.columnconfigure(1, weight=1)  # TextBox column
+        # self.window.columnconfigure(2, weight=2)  # Input/Output column
+        # self.window.rowconfigure(0, weight=1)     # First row
+        # self.window.rowconfigure(1, weight=1)     # Second row
+        # self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
+        # Input file name label
+        self.inputFileLabel = Label(self.window, text="Input", font=("Courier", 14))
+        self.inputFileLabel.grid(row=0, column=2, sticky="nw")
+
+        # Output file name label
+        self.outputFileLabel = Label(self.window, text="Output", font=("Courier", 14))
+        self.outputFileLabel.grid(row=1, column=2, sticky="nw")
+
         # Input text area in the top-right corner
-        self.inputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
-        self.inputText.grid(row=0, column=2, sticky="nsew")
+        self.inputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
+        self.inputText.grid(row=0, column=2, sticky="nsew", pady=(30, 0))
 
         # Output text area in the bottom-right corner
-        self.outputText = Text(self.window, highlightthickness=0, font=("Helvetica", 14))
-        self.outputText.grid(row=1, column=2, sticky="nsew")
+        self.outputText = Text(self.window, highlightthickness=0, font=("Courier", 14))
+        self.outputText.grid(row=1, column=2, sticky="nsew", pady=(30, 0))
+
+        self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 12), borderwidth=1, relief="solid")
+        self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
         # Line numbers on the left side of the TextBox
         self.line_numbers = TextLineNumbers(self.window, self.TextBox, width=30)
@@ -47,8 +90,8 @@ class Window:
         self.terminalText.pack(expand=True, fill="both")
 
         # Configure grid weights to allow resizing
-        self.window.columnconfigure(1, weight=2)  # TextBox column
-        self.window.columnconfigure(2, weight=1)  # Input/Output column
+        self.window.columnconfigure(1, weight=1)  # TextBox column
+        self.window.columnconfigure(2, weight=2)  # Input/Output column
         self.window.rowconfigure(0, weight=1)     # First row
         self.window.rowconfigure(1, weight=1)     # Second row
         self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
@@ -103,21 +146,28 @@ class Window:
         self.settings_menu.add_radiobutton(label="Normal Mode", variable=self.mode_var, value=0, command=self.set_mode)
         self.settings_menu.add_radiobutton(label="Dark Mode", variable=self.mode_var, value=1, command=self.set_mode)
         self.menuBar.add_cascade(label="Settings", menu=self.settings_menu)
-        def set_tab_size(self):
-            tab_size = self.tab_size_var.get()
-            self.text_widget.config(tabsize=tab_size)
+        
 
     def set_mode(self):
         mode = self.mode_var.get()
         if mode == 0:  # Normal mode
             self.window.config(bg="white", fg="black")
+            self.TextBox.config(bg="white", fg="black", insertbackground="black")
+            self.terminalText.config(bg="white", fg="black")
+            self.inputText.config(bg="white", fg="black")
+            self.outputText.config(bg="white", fg="black")
         else:  # Dark mode
             self.window.config(bg="black", fg="white")
+            self.TextBox.config(bg="black", fg="white", insertbackground="white")
+            self.terminalText.config(bg="black", fg="white")
+            self.inputText.config(bg="black", fg="white")
+            self.outputText.config(bg="black", fg="white")
 
 
     def set_tab_size(self):
         tab_size = self.tab_size_var.get()
         self.TextBox.config(tabsize=tab_size)
+
     def create_file_menu(self):
         self.fileMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.fileMenu.add_command(label="    New       Ctrl+N", command=self.new_file, )
@@ -146,6 +196,7 @@ class Window:
         self.editMenu = Menu(self.menuBar, tearoff=0, activebackground="#d5d5e2", bg="#eeeeee", bd=2, font="Helvetica")
         self.editMenu.add_command(label="Format Code", command=self.format_code)  # Add "Format Code" option
         self.menuBar.add_cascade(label="   Edit   ", menu=self.editMenu)
+        
     def new_file(self):
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen:
@@ -259,7 +310,6 @@ class Window:
             inputValue = self.TextBox.get("1.0", "end-1c")
             self.UStack.add(inputValue)
         else:
-            print("pak")
             self.isFileChange = True
             inputValue = self.TextBox.get("1.0", "end-1c")
             if self.elecnt >= 1:
@@ -330,50 +380,27 @@ class Window:
         self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
     def run_cpp_script(self):
-        
-        if self.isFileOpen and len(self.File) != 0:
-            self.write_file(self.File)
-            self.isFileChange = False
-        else:
-            self.save_new_file("yes")
-            self.window.wm_title(self.File)
-            self.isFileOpen = True
-        
-        if self.File:  # Check if a file is currently open
-            input_file = "input.txt"
-            output_file = "output.txt"
-            bash_command = f"./compile_and_run.sh {self.File} {input_file} {output_file}"
-            print("Bash command:", bash_command)  # Debugging print
-
-            # Write input text to input.txt
-            input_text = self.inputText.get("1.0", END)
-            with open(input_file, "w") as f:
-                f.write(input_text)
-
-            # Execute the bash command
-            process = subprocess.Popen(bash_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, error = process.communicate()
-            print("Output:", output.decode("utf-8"))  # Debugging print
-            
-
-
-            if error:
-                error_message = error.decode("utf-8")
-                print("Error:", error_message)
-                self.display_error(error_message)
+            if self.isFileOpen and len(self.File) != 0:
+                self.write_file(self.File)
+                self.isFileChange = False
             else:
-                # Reload the output file
-                try:
-                    with open(output_file, "r") as f:
-                        output_text = f.read()
-                        self.outputText.delete('1.0', END)  # Clear previous output
-                        self.outputText.insert(END, output_text)  # Update outputText with new output
-                        print("Output:", output_text)  # Debugging print
-                except FileNotFoundError:
-                    print("Output file not found.")
-        else:
-            print("No file is currently open.")
+                self.save_new_file("yes")
+                self.window.wm_title(self.File)
+                self.isFileOpen = True
+            
+            if self.File:  # Check if a file is currently open
+                input_text = self.inputText.get("1.0", END)
+                output_text, error_message = run_cpp_script(self.File, input_text)
 
+                if error_message:
+                    print("Error:", error_message)
+                    self.display_error(error_message)
+                else:
+                    self.outputText.delete('1.0', END)  # Clear previous output
+                    self.outputText.insert(END, output_text)  # Update outputText with new output
+
+            else:
+                print("No file is currently open.")
     def open_input_file(self):
         try:
             with open("input.txt", "r") as input_file:
@@ -397,6 +424,8 @@ class Window:
         if self.isFileOpen and self.isFileChange:
             self.retrieve_input(self.File)
     def save_file_shortcut(self, event):
+        print("save")
+        self.format_code()
         self.retrieve_input()
 
     def run_cpp_script_extra(self,event):
@@ -416,6 +445,7 @@ class Window:
                 start_index = '1.0'
                 while True:
                     start_index = self.TextBox.search(pattern, start_index, stopindex=END, regexp=True)
+                    print(self.TextBox)
                     if not start_index:
                         break
                     
