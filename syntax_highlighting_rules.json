@@ -1,33 +1,52 @@
 [
   {
-    "pattern": "#[^\n]*",
-    "color": "gray",
-    "tag_name": "comment"
+    "pattern": "\\b(and|or|not|if|else|while|for|do|switch|case|default|continue|break|return|typedef|sizeof|struct|class|union|namespace|const|constexpr|static|volatile|extern|inline|mutable|virtual|override|final)\\b",
+    "tag_name": "keyword.control",
+    "color": "blue"
   },
   {
-    "pattern": "\\b(if|else|for|while|break|continue|return)\\b",
-    "color": "blue",
-    "tag_name": "keyword"
+    "pattern": "\\b(int|float|double|void|char|bool|unsigned|signed|short|long)\\b",
+    "tag_name": "keyword.type",
+    "color": "blue"
   },
   {
-    "pattern": "\\b(int|float|double|char|void)\\b",
-    "color": "purple",
-    "tag_name": "type"
+    "pattern": "(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?\\b",
+    "tag_name": "constant.numeric",
+    "color": "orange"
   },
   {
-    "pattern": "\\b(true|false)\\b",
-    "color": "green",
-    "tag_name": "boolean"
+    "pattern": "(\\b0x[0-9a-fA-F]+\\b|\\b0[0-7]+\\b)",
+    "tag_name": "constant.numeric",
+    "color": "orange"
   },
   {
-    "pattern": "\\b[0-9]+\\b",
-    "color": "orange",
-    "tag_name": "number"
+    "pattern": "//.*",
+    "tag_name": "comment.line",
+    "color": "gray"
   },
   {
-    "pattern": "\".*?\"",
-    "color": "red",
-    "tag_name": "string"
+    "pattern": "/\\*([^*]|(\\*+[^*/]))*\\*+/",
+    "tag_name": "comment.block",
+    "color": "gray"
+  },
+  {
+    "pattern": "(\"(?:[^\"\\\\]|\\\\.)*\")|('(?:[^'\\\\]|\\\\.)*')",
+    "tag_name": "string",
+    "color": "green"
+  },
+  {
+    "pattern": "(\\btrue\\b|\\bfalse\\b)",
+    "tag_name": "constant.language",
+    "color": "purple"
+  },
+  {
+    "pattern": "(<|>|<=|>=|==|!=|\\+\\+|\\-\\-|\\+\\=|\\-\\=|\\*\\=|\\/\\=|\\%\\=|\\&\\&|\\|\\||\\!|\\~|\\^|\\&|\\||\\*|\\/|\\%|\\<\\<|\\>\\>|\\<\\<\\=|\\>\\>\\=)",
+    "tag_name": "keyword.operator",
+    "color": "purple"
+  },
+  {
+    "pattern": "#(\\s)*(include|define|if|ifdef|ifndef|else|elif|endif|error|pragma)\\b",
+    "tag_name": "keyword.preprocessor",
+    "color": "red"
   }
 ]
-

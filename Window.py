@@ -39,11 +39,20 @@ class Window:
         self.line_numbers = TextLineNumbers(self.window, self.TextBox, width=30)
         self.line_numbers.grid(row=0, column=0, rowspan=2, sticky="nsw")
 
+        # Terminal frame for displaying compilation errors/messages
+        self.terminalFrame = Frame(self.window, bg="black", height=200)
+        self.terminalFrame.grid(row=2, column=0, columnspan=3, sticky="nsew")
+        
+        self.terminalText = Text(self.terminalFrame, bg="black", fg="white", font=("Courier", 12))
+        self.terminalText.pack(expand=True, fill="both")
+
         # Configure grid weights to allow resizing
         self.window.columnconfigure(1, weight=2)  # TextBox column
         self.window.columnconfigure(2, weight=1)  # Input/Output column
         self.window.rowconfigure(0, weight=1)     # First row
         self.window.rowconfigure(1, weight=1)     # Second row
+        self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
+
         # Load empty file in TextBox
         self.TextBox.insert(END, "")  
 
@@ -61,8 +70,6 @@ class Window:
 
         self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
         self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
-
-        # self.configure_syntax_highlighting()  # Call the function to configure syntax highlighting
 
         self.window.mainloop()
 
@@ -392,27 +399,35 @@ class Window:
         self.run_cpp_script()
         
     def configure_syntax_highlighting(self):
-        pass
-            # # Load syntax highlighting rules from the JSON file
-            # with open('cpp_syntax_highlighting_rules.json') as f:
-            #     syntax_rules = json.load(f)
-            
-            # print("text syntax",self.TextBox)
-            # # Apply syntax highlighting rules
-            # for rule in syntax_rules:
-            #     pattern = rule['pattern']
-            #     color = rule['color']
-            #     tag_name = rule['tag_name']
-            #     self.TextBox.tag_configure(tag_name, foreground=color)
+        try:
+            with open('cpp_syntax_highlighting_rules.json') as f:
+                syntax_rules = json.load(f)
 
-            #     start_index = '1.0'
-            #     while True:
-            #         start_index = self.TextBox.search("int", start_index, stopindex=END)
-            #         if not start_index:
-            #             break
-            #         end_index = f"{start_index}+{len(pattern)}c"
-            #         self.TextBox.tag_add(tag_name, start_index, end_index)
-            #         start_index = end_index
+            for rule in syntax_rules:
+                pattern = rule['pattern']
+                color = rule['color']
+                tag_name = rule['tag_name']
+                self.TextBox.tag_configure(tag_name, foreground=color)
+                print(pattern)
+                start_index = '1.0'
+                while True:
+                    start_index = self.TextBox.search(pattern, start_index, stopindex=END, regexp=True)
+                    if not start_index:
+                        break
+                    
+                    # Calculate end_index based on the length of matched text
+                    end_index = self.TextBox.index(f"{start_index}+{len(self.TextBox.get(start_index, f'{start_index} lineend'))}c")
+                    
+                    # Tag the matched text with the appropriate tag
+                    self.TextBox.tag_add(tag_name, start_index, end_index)
+                    
+                    # Move start_index forward to continue searching
+                    start_index = end_index
+
+        except FileNotFoundError:
+            print("Syntax highlighting rules file (cpp_syntax_highlighting_rules.json) not found.")
+
+
 
     def format_code(self):
         """
@@ -420,9 +435,9 @@ class Window:
         """
         # Get the current contents of the text editor
         code = self.TextBox.get("1.0", "end-1c")
-
+        print(code)
         # Format the code using autopep8
-        formatted_code =CodeFormatter.format_code(code)      # Update the text editor with the formatted code
+        formatted_code =CodeFormatter.format_cpp_code(code)      # Update the text editor with the formatted code
         self.TextBox.delete("1.0", "end")
         self.TextBox.insert("1.0", formatted_code)
 
