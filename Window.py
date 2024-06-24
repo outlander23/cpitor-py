@@ -21,15 +21,27 @@ class Window:
         self.isFileChange = False
         
         self.mode = "normal"
-        self.fileTypes = [('All Files', '*.*'),
-                          ('Python Files', '*.py'),
-                          ('Text Document', '*.txt')]
+        self.fileTypes = [('cpp', '*.cpp*'),]
 
         self.window = Tk()
         self.window.geometry("1200x700+200+150")
         self.window.wm_title("Untitled")
 
        
+        self.create_grids()
+        self.open_input_file()
+        self.open_output_file()
+
+        self.create_menu()
+        self.key_binding()
+
+        self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
+        self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
+
+        self.window.mainloop()
+
+    def create_grids(self):
+
         self.TextBox = Text(self.window, highlightthickness=0, font=("Courier", 12), borderwidth=1, relief="solid")
 
         self.TextBox.grid(row=0, column=1, rowspan=2, sticky="nsew")
@@ -71,27 +83,28 @@ class Window:
         self.window.rowconfigure(0, weight=1)     # First row
         self.window.rowconfigure(1, weight=1)     # Second row
         self.window.rowconfigure(2, weight=1)     # Third row (for terminal)
-   
-
-        # Load empty file in TextBox
         self.TextBox.insert(END, "")  
 
-        # Open input.txt in inputText
-        self.open_input_file()
-
-        # Open output.txt in outputText
-        self.open_output_file()
-
+    def key_binding(self):
+        self.window.bind("<Control-a>", self.select_all)
+        self.window.bind("<Control-x>", self.cut_text)
         self.window.bind("<F7>", self.run_cpp_script_extra)
-        self.TextBox.bind("<FocusOut>", self.save_file_on_focus_out)
         self.window.bind("<Control-s>", self.save_file_shortcut)
+        self.TextBox.bind("<FocusOut>", self.save_file_on_focus_out)
+        self.window.bind("<Key>", self.key_pressed)
+        
+
+    def select_all(self, event=None):
+        self.TextBox.tag_add("sel", "1.0", "end-1c")
+        print("selected all")
+        return "break"  # Prevents default action (like inserting 'A')
     
-        self.create_menu()
-
-        self.UStack = Stack(self.TextBox.get("1.0", "end-1c"))
-        self.RStack = Stack(self.TextBox.get("1.0", "end-1c"))
-
-        self.window.mainloop()
+    def cut_text(self, event=None):
+        if self.TextBox.tag_ranges("sel"):
+            selected_text = self.TextBox.get("sel.first", "sel.last")
+            self.TextBox.clipboard_clear()
+            self.TextBox.clipboard_append(selected_text)
+            self.TextBox.delete("sel.first", "sel.last")
 
     def display_error(self, error_message):
         self.terminalText.config(state="normal")
@@ -255,7 +268,6 @@ class Window:
             self.isFileOpen = True
 
     def key_pressed(self, event):
-        self.configure_syntax_highlighting()
         if event.char == "\x1a" and event.keysym == "Z":
             self.redo()
         elif event.char == "\x1a" and event.keysym == "z":
@@ -295,6 +307,9 @@ class Window:
 
         if self.TextBox.get("1.0", "end-1c") == self.UStack.ele(0):
             self.isFileChange = False
+
+        self.configure_syntax_highlighting()
+        print("print")
 
     def undo(self):
         self.isFileChange = True
