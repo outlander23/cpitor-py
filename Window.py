@@ -1,18 +1,18 @@
-
+import re
 import json
+from Stack import *
+import CodeFormatter 
 from tkinter import *
 
-from tkinter import messagebox as message
 from tkinter import filedialog as fd
-
-from Stack import *
-
-import CodeFormatter 
-
-from Linenumber import TextLineNumbers
 from Cpp_runner import run_cpp_script
+from Linenumber import TextLineNumbers
+from tkinter import messagebox as message
 
-import re
+
+
+
+
 class Window:
     def __init__(self):
         self.File = ""
@@ -98,17 +98,15 @@ class Window:
         self.terminalText.delete(1.0, END)  # Clear previous content
         self.terminalText.insert(END, error_message)
         self.terminalText.config(state="disabled")
+
     def create_menu(self):
         self.menuBar = Menu(self.window, bg="#eeeeee", font=("Helvetica", 13), borderwidth=0)
         self.window.config(menu=self.menuBar)
-
         self.create_file_menu()
         self.create_view_menu()
         self.create_help_menu()
         self.create_run_menu()
-
         self.create_edit_menu()
-
         self.create_setting_menu()
 
     def create_setting_menu(self):
@@ -138,7 +136,7 @@ class Window:
             self.terminalText.config(bg="black", fg="white")
             self.inputText.config(bg="black", fg="white")
             self.outputText.config(bg="black", fg="white")
-
+        self.configure_syntax_highlighting()
 
     def set_tab_size(self):
         tab_size = self.tab_size_var.get()
@@ -199,7 +197,7 @@ class Window:
             self.UStack.add(self.TextBox.get("1.0", "end-1c"))
 
     def open_file(self):
-        self.configure_syntax_highlighting()
+        
         print("opne file")
         self.TextBox.config(state=NORMAL)
         if self.isFileOpen and self.isFileChange:
@@ -218,6 +216,7 @@ class Window:
         if self.UStack.size() > 0:
             self.UStack.clear_stack()
             self.UStack.add(self.TextBox.get("1.0", "end-1c"))
+        self.configure_syntax_highlighting()
 
     def save_file(self, file):
         print("save file click")
@@ -256,6 +255,7 @@ class Window:
             self.isFileOpen = True
 
     def key_pressed(self, event):
+        self.configure_syntax_highlighting()
         if event.char == "\x1a" and event.keysym == "Z":
             self.redo()
         elif event.char == "\x1a" and event.keysym == "z":
@@ -377,6 +377,7 @@ class Window:
 
             else:
                 print("No file is currently open.")
+
     def open_input_file(self):
         try:
             with open("input.txt", "r") as input_file:
@@ -399,6 +400,7 @@ class Window:
         # Save the file if it's open and there are changes
         if self.isFileOpen and self.isFileChange:
             self.retrieve_input(self.File)
+
     def save_file_shortcut(self, event):
         print("save")
         self.format_code()
@@ -409,9 +411,12 @@ class Window:
         
     def configure_syntax_highlighting(self):
         try:
-            with open('cpp_syntax_highlighting_rules.json') as f:
-                syntax_rules = json.load(f)
-
+            if(self.mode=="dark"):
+                with open("dark_syntax_rules.json") as f:
+                    syntax_rules = json.load(f)
+            else:
+                with open('cpp_syntax_highlighting_rules.json') as f:
+                    syntax_rules = json.load(f)
             for rule in syntax_rules:
                 pattern = rule['pattern']
                 color = rule['color']
@@ -431,9 +436,7 @@ class Window:
             print(f"An error occurred: {e}")
 
     def format_code(self):
-
         code = self.TextBox.get("1.0", "end-1c")
-
         formatted_code =CodeFormatter.format_cpp_code(code) 
         self.TextBox.delete("1.0", "end")
         self.TextBox.insert("1.0", formatted_code)

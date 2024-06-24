@@ -1,0 +1,52 @@
+[
+  {
+    "pattern": "\\b(and|or|not|if|else|while|for|do|switch|case|default|continue|break|return|typedef|sizeof|struct|class|union|namespace|const|constexpr|static|volatile|extern|inline|mutable|virtual|override|final)\\b",
+    "tag_name": "keyword.control",
+    "color": "#56B6C2"
+  },
+  {
+    "pattern": "\\b(int|float|double|void|char|bool|unsigned|signed|short|long)\\b",
+    "tag_name": "keyword.type",
+    "color": "#C678DD"
+  },
+  {
+    "pattern": "(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?\\b",
+    "tag_name": "constant.numeric",
+    "color": "#D19A66"
+  },
+  {
+    "pattern": "(\\b0x[0-9a-fA-F]+\\b|\\b0[0-7]+\\b)",
+    "tag_name": "constant.numeric",
+    "color": "#D19A66"
+  },
+  {
+    "pattern": "//.*",
+    "tag_name": "comment.line",
+    "color": "#7F848E"
+  },
+  {
+    "pattern": "/\\*([^*]|(\\*+[^*/]))*\\*+/",
+    "tag_name": "comment.block",
+    "color": "#7F848E"
+  },
+  {
+    "pattern": "(\"(?:[^\"\\\\]|\\\\.)*\")|('(?:[^'\\\\]|\\\\.)*')",
+    "tag_name": "string",
+    "color": "#98C379"
+  },
+  {
+    "pattern": "(\\btrue\\b|\\bfalse\\b)",
+    "tag_name": "constant.language",
+    "color": "#E5C07B"
+  },
+  {
+    "pattern": "(<|>|<=|>=|==|!=|\\+\\+|\\-\\-|\\+\\=|\\-\\=|\\*\\=|\\/\\=|\\%\\=|\\&\\&|\\|\\||\\!|\\~|\\^|\\&|\\||\\*|\\/|\\%|\\<\\<|\\>\\>|\\<\\<\\=|\\>\\>\\=)",
+    "tag_name": "keyword.operator",
+    "color": "#E06C75"
+  },
+  {
+    "pattern": "#(\\s)*(include|define|if|ifdef|ifndef|else|elif|endif|error|pragma)\\b",
+    "tag_name": "keyword.preprocessor",
+    "color": "#61AFEF"
+  }
+]
