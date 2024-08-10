@@ -1,37 +1,75 @@
-# 📝 CPitor
+# CPitor: Competitive Programming Editor
+
+
+
+## Screenshot
+
+![Screenshot from 2024-08-10 18-56-59](https://github.com/user-attachments/assets/6d033fca-dc16-4683-a3a9-65b6b1489d24)
+
+
 
 ## About
+**CPitor** is a specialized editor designed specifically for competitive programmers, providing a streamlined interface for writing, editing, and executing code efficiently.
 
-# Specialized Editor for Competitive Programmers
+## Features
 
-## Description
+### 1. C++ Code Editing
+Edit C++ code with ease, featuring:
+- Syntax highlighting for improved code readability.
+- Auto-indentation and code completion.
 
-This specialized editor is designed specifically for competitive programmers, providing a streamlined interface for writing, editing, and executing code efficiently. Here are its key features:
+### 2. Compilation and Execution
+Compile and run C++ code directly from the interface, with:
+- Input and output file management.
+- Real-time execution and debugging.
 
-1. **Text Editing**: The editor offers a clean and intuitive interface for writing and editing code. It includes standard features like undo/redo, copy/cut/paste, and keyboard shortcuts for common actions.
+### 3. AI-Powered Features (Coming Soon!)
+Stay tuned for AI-driven features that will revolutionize your competitive programming experience!
 
-2. **File Management**: Users can create new files, open existing ones, and save their work with ease. The editor supports various file types, including plain text, Python scripts, and general-purpose text documents.
+### 4. Customization Options
+Personalize your editor experience with:
+- Adjustable color schemes (light and dark modes).
+- Configurable keyboard shortcuts.
 
-3. **Input/Output Handling**: For competitive programming tasks, the editor allows users to manage input and output files conveniently. It provides separate text areas for input and output, enabling users to view and edit input/output data side by side.
-
-4. **Syntax Highlighting**: The editor includes syntax highlighting for different programming languages, enhancing code readability and making it easier to identify keywords, variables, and other elements.
-
-5. **Execution of C++ Code**: Competitive programmers often need to compile and run C++ code. This editor includes functionality to compile and execute C++ programs directly from the interface. Users can select a C++ file, input file, and output file, then run the script with a single click.
-
-6. **Customization Options**: Users can customize the editor's appearance and behavior according to their preferences. This includes adjusting the color scheme (e.g., switching between light and dark modes) and configuring keyboard shortcuts.
-
-7. **About Section**: The editor includes an "About" section, providing information about the software and its developers. Users can access this section to learn more about the editor and its features.
-
-Overall, this specialized editor offers a user-friendly environment tailored to the needs of competitive programmers, helping them write, test, and debug code efficiently for programming contests and challenges.
+### 5. About Section
+Learn more about CPitor and its developers in the dedicated "About" section.
 
 ## Technologies Used
+- **Python 3**: The primary programming language used for development.
+- **Tkinter**: A Python GUI toolkit for building the user interface.
 
-- Python
-- Tkinter( Python GUI toolkit)
+## Prerequisites
+- **Python 3**: Ensure you have Python 3 installed on your system.
+- **Pip 3**: The package installer for Python 3.
+- **Tkinter**: Install Tkinter using `pip install tkinter`.
+- **Windows**: CPitor is compatible with Windows operating systems.
 
-## Prerequisite
+## Getting Started
 
-- Python3
-- Pip3
-- tkinter
-- window
+1. Clone the repository or download the source code.
+2. Run `main.py` to launch CPitor.
+3. Start coding and competing!
+
+## License
+CPitor is open-source software, licensed under the [MIT License](LICENSE).
+
+## Contributing
+Contributions are welcome! If you'd like to contribute to CPitor, please fork the repository and submit a pull request.
+
+## Authors
+- **[S.M.MILOY]**
+
+
+## Changelog
+
+### v1.0
+- Initial release of CPitor
+
+## Roadmap
+- Implement AI-powered features.
+- Add support for additional programming languages.
+- Enhance user interface and user experience.
+
+## Support
+If you encounter any issues or have questions, please open an issue on this repository.
+
